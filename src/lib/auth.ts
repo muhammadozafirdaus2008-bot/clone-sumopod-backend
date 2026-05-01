@@ -8,8 +8,7 @@ export const auth = betterAuth({
   }),
 
   trustedOrigins: [
-  'http://localhost:5173',
-  'http://localhost:8080',
+  'https://app.ghozali.biz.id'
   ],
 
  emailAndPassword: {
@@ -18,5 +17,5 @@ export const auth = betterAuth({
 },
 
   secret: process.env.BETTER_AUTH_SECRET!,
-  baseURL: process.env.BETTER_AUTH_URL ?? 'http://localhost:3000',
+  baseURL: process.env.BETTER_AUTH_URL ?? 'https://app.ghozali.biz.id',
 });
