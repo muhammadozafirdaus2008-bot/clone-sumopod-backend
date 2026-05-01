@@ -17,5 +17,5 @@ export const auth = betterAuth({
 },
 
   secret: process.env.BETTER_AUTH_SECRET!,
-  baseURL: process.env.BETTER_AUTH_URL ?? 'https://app.ghozali.biz.id',
+  baseURL: process.env.BETTER_AUTH_URL ?? 'https://clone-sumopod-backend-production.up.railway.app',
 });
