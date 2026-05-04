@@ -76,7 +76,8 @@ app.post('/api/payment/webhook', async (c) =>{
   if(body.status === 'PAID') {
     const parts = body.external_id.split('-');
     parts.shift();
-    parts.pop;
+    parts.pop();
+    const userId = parts.join('-')
     const amount = body.amount;
 
    const existing = await db.select().from(balances).where(eq(balances.userId, userId));
