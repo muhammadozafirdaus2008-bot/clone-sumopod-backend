@@ -29,7 +29,7 @@ app.on(['GET', 'POST'], '/api/auth/**', (c) => auth.handler(c.req.raw));
 const PORT = Number(process.env.PORT) || 3000;
 
 app.post('/api/payment/create', async (c) => {
-  const session = await auth.api.getSession({ headers : c.req.raw.headers });
+  const session = await auth.api.getSession({ headers: c.req.raw.headers });
   if (!session) return c.json({ error : 'Unauthorized '}, 401);
 
   const  { amount } = await c.req.json();
