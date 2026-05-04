@@ -121,6 +121,44 @@ if (body.status === 'PAID') {
   return c.json({ success: true});
 });
 
+app.get('/api/balance', async (c) => {
+  const session = await auth.api.getSession({ headers: c.req.raw.headers });
+  if (!session) return c.json({ error: 'Unauthorized' }, 401);
+
+  const userId = session.user.id;
+
+  const data = await db.select().from(balances)
+    .where(eq(balances.userId, userId));
+
+  return c.json({
+    balance: data[0]?.balance ?? 0
+  });
+});
+
+app.get('/api/transactions', async (c) => {
+  const session = await auth.api.getSession({ headers: c.req.raw.headers });
+  if (!session) return c.json({ error: 'Unauthorized' }, 401);
+
+  const userId = session.user.id;
+
+  const data = await db.select().from(transactions)
+    .where(eq(transactions.userId, userId));
+
+  return c.json(data);
+});
+
+app.get('/api/payments', async (c) => {
+  const session = await auth.api.getSession({ headers: c.req.raw.headers });
+  if (!session) return c.json({ error: 'Unauthorized' }, 401);
+
+  const userId = session.user.id;
+
+  const data = await db.select().from(payments)
+    .where(eq(payments.userId, userId));
+
+  return c.json(data);
+});
+
 serve({ fetch: app.fetch, port: PORT }, () => {
   console.log(`🚀 Server running at http://localhost:${PORT}`);
 });
