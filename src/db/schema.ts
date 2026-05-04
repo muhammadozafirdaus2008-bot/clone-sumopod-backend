@@ -39,4 +39,5 @@ export const payments = pgTable('payments', {
   status: text('status').default('pending'),
   invoiceUrl: text('invoice_url'),
   createdAt: timestamp('created_at').defaultNow(),
+   externalId: text('external_id').notNull(),
 });

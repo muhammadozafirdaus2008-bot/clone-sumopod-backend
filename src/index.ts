@@ -1,3 +1,4 @@
+console.log("🚀 VERSION 2 - FIX WEBHOOK");
 import 'dotenv/config';
 import { serve } from '@hono/node-server';
 import { Hono } from 'hono';
@@ -38,29 +39,30 @@ app.post('/api/payment/create', async (c) => {
 
   const  { amount } = await c.req.json();
   const userId = session.user.id;
+const externalId = `topup-${userId}-${Date.now()}`;
 
-  const xenditRes = await fetch ('https://api.xendit.co/v2/invoices', {
-    method:  'POST',
-    headers: {
-      'Authorization' : 'Basic ' + btoa(process.env.XENDIT_SECRET_KEY + ':'),
-      'Content-Type' : 'application/json',
-      },
+const xenditRes = await fetch ('https://api.xendit.co/v2/invoices', {
+  method:  'POST',
+  headers: {
+    'Authorization' : 'Basic ' + btoa(process.env.XENDIT_SECRET_KEY + ':'),
+    'Content-Type' : 'application/json',
+  },
+  body : JSON.stringify({
+    external_id: externalId,
+    amount: amount,
+    currency : 'IDR',
+    success_redirect_url: 'https://app.ghozali.biz.id/billing?status=success',
+    failure_redirect_url :'https://app.ghozali.biz.id/billing?status=failed',
+  }),
+}).then(r => r.json());
 
-      body : JSON.stringify({
-          external_id: `topup-${userId}-${Date.now()}`,
-          amount: amount,
-          currency : 'IDR',
-          success_redirect_url: 'https://app.ghozali.biz.id/billing?status=success',
-          failure_redirect_url :'https://app.ghozali.biz.id/billing?status=failed',
-      }),
-  }).then(r => r.json());
-
-  await db.insert(payments).values({
-    userId,
-    amount : amount.toString(),
-    status : 'Pending',
-    invoiceUrl:xenditRes.invoice_url,
-  });
+await db.insert(payments).values({
+  userId,
+  externalId, // ✅ sekarang valid
+  amount : amount.toString(),
+  status : 'Pending',
+  invoiceUrl:xenditRes.invoice_url,
+});
 
   return c.json ({ invoice_url: xenditRes.invoice_url});
 });
@@ -82,7 +84,7 @@ if (body.status === 'PAID') {
 
   const userId = parts.join('-');
 
-  // ✅ VALIDASI WAJIB
+  
   if (!userId) {
     console.error('❌ Invalid external_id:', body.external_id);
     return c.json({ error: 'Invalid external_id' }, 400);
@@ -112,8 +114,8 @@ if (body.status === 'PAID') {
    });
 
    await db.update(payments)
-   .set({status: 'paid'})
-   .where(eq(payments.userId, userId));
+.set({ status: 'paid' })
+.where(eq(payments.externalId, body.external_id));
   
   }
   return c.json({ success: true});

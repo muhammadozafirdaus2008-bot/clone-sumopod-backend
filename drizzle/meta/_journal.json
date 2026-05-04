@@ -15,6 +15,13 @@
       "when": 1777533699534,
       "tag": "0001_brown_blockbuster",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1777910492601,
+      "tag": "0002_misty_ronan",
+      "breakpoints": true
     }
   ]
 }
