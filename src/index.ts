@@ -71,14 +71,26 @@ app.post('/api/payment/webhook', async (c) =>{
     return c.json({ error: 'Unauthorized'}, 401);
   }
 
-  const body = await c.req.json();
+ const body = await c.req.json();
 
-  if(body.status === 'PAID') {
-    const parts = body.external_id.split('-');
-    parts.shift();
-    parts.pop();
-    const userId = parts.join('-')
-    const amount = body.amount;
+console.log('📩 Webhook body:', body); // DEBUG
+
+if (body.status === 'PAID') {
+  const parts = body.external_id.split('-');
+  parts.shift();
+  parts.pop();
+
+  const userId = parts.join('-');
+
+  // ✅ VALIDASI WAJIB
+  if (!userId) {
+    console.error('❌ Invalid external_id:', body.external_id);
+    return c.json({ error: 'Invalid external_id' }, 400);
+  }
+
+  console.log('✅ Parsed userId:', userId);
+
+  const amount = body.amount;
 
    const existing = await db.select().from(balances).where(eq(balances.userId, userId));
 
