@@ -13,7 +13,8 @@ const app = new Hono();
 
 app.use('*', cors({
   origin: [
-    'https://app.ghozali.biz.id'
+    'https://app.ghozali.biz.id',
+    'https://clone-sumopod-backend-production.up.railway.app',
   ],
   allowHeaders: ['Content-Type', 'Authorization'],
   allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -31,6 +32,9 @@ const PORT = Number(process.env.PORT) || 3000;
 app.post('/api/payment/create', async (c) => {
   const session = await auth.api.getSession({ headers: c.req.raw.headers });
   if (!session) return c.json({ error : 'Unauthorized '}, 401);
+
+  console.log('session:', session);
+  console.log('Cookie header:', c.req.header('cookie'));
 
   const  { amount } = await c.req.json();
   const userId = session.user.id;
@@ -71,7 +75,8 @@ app.post('/api/payment/webhook', async (c) =>{
 
   if(body.status === 'PAID') {
     const parts = body.external_id.split('-');
-    const userId = parts[1];
+    parts.shift();
+    parts.pop;
     const amount = body.amount;
 
    const existing = await db.select().from(balances).where(eq(balances.userId, userId));
