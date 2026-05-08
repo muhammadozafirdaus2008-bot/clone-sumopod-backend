@@ -58,7 +58,7 @@ const xenditRes = await fetch ('https://api.xendit.co/v2/invoices', {
 
 await db.insert(payments).values({
   userId,
-  externalId, // ✅ sekarang valid
+  externalId, 
   amount : amount.toString(),
   status : 'Pending',
   invoiceUrl:xenditRes.invoice_url,
@@ -158,6 +158,35 @@ app.get('/api/payments', async (c) => {
 
   return c.json(data);
 });
+
+app.post('/instances', async (c) => {
+  const session = await auth.api.getSession({ 
+    headers: c.req.raw.headers 
+  })
+  
+  if (!session) {
+    return c.json({ error: 'Unauthorized' }, 401)
+  }
+  
+  const userId = session.user.id
+  
+  const body = await c.req.json()
+
+  const res = await fetch ('https://asysetup-n8n.rshg0u.easypanel.host/webhook/deploy', {
+    method : 'POST',
+headers: {
+  'Content-Type' : 'application/json'
+},
+  body: JSON.stringify(body)
+  })
+
+  const result = await res.json()
+
+  return c.json({
+    message: 'instance deployed successfully',
+    n8n: result
+  })
+})
 
 serve({ fetch: app.fetch, port: PORT }, () => {
   console.log(`🚀 Server running at http://localhost:${PORT}`);
