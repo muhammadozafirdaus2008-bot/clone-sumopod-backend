@@ -195,21 +195,25 @@ await db.insert(instances).values({
   })
 })
 
-app.get('/api/instances', async (c) => {
-  const session = await auth.api.getSession({ 
-    headers: c.req.raw.headers 
+app.get('/api/instances',async (c) => {
+
+const session = await auth.api.getSession({
+    headers:c.req.raw.headers
   })
-  
-  if (!session) {
-    return c.json({ error: 'Unauthorized' }, 401)
+
+if (!session) {
+return c.json({ error:'Unauthorized' },401)
   }
 
-  const userId = session.user.id
+const userId=session.user.id
 
-  const data = await db.select().from(instances)
-    .where(eq(instances.userId, userId))
+const data=await db
+.select()
+.from(instances)
+.where(eq(instances.userId,userId))
 
-  return c.json(data)
+return c.json(data)
+
 })
 serve({ fetch: app.fetch, port: PORT }, () => {
   console.log(`🚀 Server running at http://localhost:${PORT}`);
