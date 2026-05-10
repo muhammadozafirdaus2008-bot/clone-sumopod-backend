@@ -182,12 +182,6 @@ headers: {
   })
 
   const result = await res.json()
-await db.insert(instances).values({
-  userId: userId,
-  serviceName: body.name || 'default',
-  status: 'deploying',
-  url: result.url ?? null,
-})
 
   return c.json({
     message: 'instance deployed successfully',
