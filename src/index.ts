@@ -1,4 +1,3 @@
-console.log("🚀 VERSION 2 - FIX WEBHOOK");
 import 'dotenv/config';
 import { serve } from '@hono/node-server';
 import { Hono } from 'hono';
@@ -164,29 +163,68 @@ app.post('/instances', async (c) => {
   const session = await auth.api.getSession({ 
     headers: c.req.raw.headers 
   })
-  
   if (!session) {
     return c.json({ error: 'Unauthorized' }, 401)
   }
   
   const userId = session.user.id
-
   const body = await c.req.json()
+  const { name, projectName } = body
 
-  const res = await fetch ('https://asysetup-n8n.rshg0u.easypanel.host/webhook/deploy', {
-    method : 'POST',
-headers: {
-  'Content-Type' : 'application/json'
-},
-  body: JSON.stringify(body)
-  })
+  const res = await fetch(
+    `${process.env.EASYPANEL_URL}/api/trpc/templates.createFromSchema`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.EASYPANEL_API_KEY}`
+      },
+      body: JSON.stringify({
+        json: {
+          name: 'n8n',
+          projectName: projectName,
+          schema: {
+            services: [{
+              type: 'app',
+              data: {
+                serviceName: name,
+                source: { type: 'image', image: 'n8nio/n8n:latest' },
+                domains: [{ host: '$(EASYPANEL_DOMAIN)', port: 5678 }],
+                mounts: [{ type: 'volume', name: 'data', mountPath: '/home/node/.n8n' }]
+              }
+            }]
+          }
+        }
+      })
+    }
+  )
 
   const result = await res.json()
 
+  await db.insert(instances).values({
+    userId: userId,
+    serviceName: name,
+    status: 'deploying',
+    url: null,
+  })
+
   return c.json({
     message: 'instance deployed successfully',
-    n8n: result
+    data: result
   })
+})
+
+app.get('/api/instances', async (c) => {
+  const session = await auth.api.getSession({
+    headers: c.req.raw.headers
+  })
+  if (!session) {
+    return c.json({ error: 'Unauthorized' }, 401)
+  }
+
+  const userId = session.user.id
+  const data = await db.select().from(instances).where(eq(instances.userId, userId))
+  return c.json(data)
 })
 
 app.get('/api/instances',async (c) => {
