@@ -169,7 +169,8 @@ app.post('/instances', async (c) => {
   
   const userId = session.user.id
   const body = await c.req.json()
-  const { name, projectName } = body
+  const { name } = body
+  const projectName = process.env.EASYPANEL_PROJECT
 
   const res = await fetch(
     `${process.env.EASYPANEL_URL}/api/trpc/templates.createFromSchema`,
